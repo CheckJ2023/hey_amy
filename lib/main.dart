@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hey_amy/model/api_util.dart';
 import 'model/pallete.dart';
 import 'screen/home.dart';
 

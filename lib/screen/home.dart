@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hey_amy/screen/feature_box.dart';
 import 'package:hey_amy/services/openaiservice.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -17,13 +18,23 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
-  String _lastWords='';
-  final OpenAIService openAIService=OpenAIService();
+  String? _lastWords;
+  final OpenAIService _openAIService=OpenAIService();
+  final _flutterTts = FlutterTts();
+  String? _generatedContent;
+  String? _generatedImageUrl;
 
   @override
   void initState() {
     super.initState();
     _initSpeech();
+    _initTextToSpeech();
+  }
+
+  Future<void> _initTextToSpeech() async {
+    //ios only: to set shared audio instance
+    await _flutterTts.setSharedInstance(true);
+    setState(() {});
   }
 
   ///This has to happen only once per app
@@ -53,6 +64,17 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _lastWords = result.recognizedWords;
     });
+  }
+
+  Future<void> _systemSpeak(String content) async {
+    await _flutterTts.speak(content);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _speechToText.stop();
+    _flutterTts.stop();
   }
 
   @override
@@ -112,11 +134,43 @@ class _HomePageState extends State<HomePage> {
                   topLeft: Radius.zero,
                 ),
               ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10.0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Text(
-                  'Good Morning, what task can I do for you?',
+                  _generatedContent == null
+                      ?'Good Morning, what task can I do for you?'
+                      : _generatedContent!,
                   style: TextStyle(
+                    color: Pallete.mainFontColor,
+                    fontSize: _generatedContent == null ? 20: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
+              margin: const EdgeInsets.symmetric(horizontal: 40).copyWith(
+                top: 30,
+              ),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Pallete.borderColor,
+                ),
+                borderRadius: BorderRadius.circular(20.0).copyWith(
+                  bottomRight: Radius.zero,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: Text(
+                  _lastWords == null
+                      ? 'press button and start speak.'
+                      : _lastWords!,
+                  style: const TextStyle(
                     color: Pallete.mainFontColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -124,44 +178,44 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Container(
-              //top space
-              padding: const EdgeInsets.all(10),
-              alignment: Alignment.centerLeft,
-              //left space
-              margin: const EdgeInsets.only(top: 10, left: 22),
-              child: const Text(
-                'Here are a few features',
-                style: TextStyle(
-                  color: Pallete.mainFontColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            //Features list
-            const Column(
-              children: [
-                FeatureBox(
-                  color: Pallete.firstSuggestionBoxColor,
-                  headerText: 'ChatGPT',
-                  descriptionText:
-                      'A smarter way to stay organized and informed with CharGPT.',
-                ),
-                FeatureBox(
-                  color: Pallete.secondSuggestionBoxColor,
-                  headerText: 'Dall-E',
-                  descriptionText:
-                      'Get inspired and stay creative with your personal assistant powered by Dall-E.',
-                ),
-                FeatureBox(
-                  color: Pallete.thirdSuggestionBoxColor,
-                  headerText: 'Smart Voice Assistant',
-                  descriptionText:
-                      'Get the best of both worlds with a voice assistant powered Dall-E and ChatGPT.',
-                ),
-              ],
-            ),
+            // Container(
+            //   //top space
+            //   padding: const EdgeInsets.all(10),
+            //   alignment: Alignment.centerLeft,
+            //   //left space
+            //   margin: const EdgeInsets.only(top: 10, left: 22),
+            //   child: const Text(
+            //     'Here are a few features',
+            //     style: TextStyle(
+            //       color: Pallete.mainFontColor,
+            //       fontSize: 20,
+            //       fontWeight: FontWeight.bold,
+            //     ),
+            //   ),
+            // ),
+            // //Features list
+            // const Column(
+            //   children: [
+            //     FeatureBox(
+            //       color: Pallete.firstSuggestionBoxColor,
+            //       headerText: 'ChatGPT',
+            //       descriptionText:
+            //           'A smarter way to stay organized and informed with CharGPT.',
+            //     ),
+            //     FeatureBox(
+            //       color: Pallete.secondSuggestionBoxColor,
+            //       headerText: 'Dall-E',
+            //       descriptionText:
+            //           'Get inspired and stay creative with your personal assistant powered by Dall-E.',
+            //     ),
+            //     FeatureBox(
+            //       color: Pallete.thirdSuggestionBoxColor,
+            //       headerText: 'Smart Voice Assistant',
+            //       descriptionText:
+            //           'Get the best of both worlds with a voice assistant powered Dall-E and ChatGPT.',
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),
@@ -171,13 +225,24 @@ class _HomePageState extends State<HomePage> {
           if (await _speechToText.hasPermission &&
               _speechToText.isNotListening) {
             print('start listening');
-            print(_lastWords);
+            print(_lastWords!);
             _startListening();
           } else if (_speechToText.isListening) {
             print('stop listening');
-            print(_lastWords);
-            final speech = await openAIService.isArtPromptAPI(_lastWords);
+            print(_lastWords!);
+            final speech = await _openAIService.isArtPromptAPI(_lastWords!);
+            if(speech.contains('https')){
+              _generatedImageUrl = speech;
+              _generatedContent = null;
+              setState(() {});
+            } else {
+              _generatedImageUrl = null;
+              _generatedContent = speech;
+              setState(() {});
+              await _systemSpeak(speech);
+            }
             print(speech);
+
             _stopListening();
           // } else {
           //   _initSpeech();

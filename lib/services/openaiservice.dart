@@ -44,10 +44,10 @@ class OpenAIService {
         headers: headers,
         body: json.encode(data),
       );
-      print('yay');
+      // print('yay');
       print(response.body);
       if (response.statusCode == 200) {
-         print('yay2');
+         // print('yay2');
         String content = jsonDecode(response.body)['choices'][0]['message']['content'];
         content = content.trim();
 
@@ -64,7 +64,8 @@ class OpenAIService {
         }
       }
       // return 'AI';
-      return 'An internal error occurred';
+      // return 'An internal error occurred';
+      return '幹,lin,nyahr,lay. ERROR in isArtPromptAPI';
     } catch (e) {
       return e.toString();
     }
@@ -90,9 +91,6 @@ class OpenAIService {
         "model": "gpt-3.5-turbo",
         "messages": _messages,
       };
-      //   'prompt' : message,
-      //   'max_tokens':50,// Adjust as needed
-      // };
 
       final response = await http.post(
         Uri.parse(endpoint),
@@ -111,13 +109,57 @@ class OpenAIService {
         return content;
       }
       // return 'AI';
-      return 'An internal error occurred';
+      return '幹,lin,nyahr,lay. ERROR in CHATGPTAPI';
     } catch (e) {
       return e.toString();
     }
   }
 
-  Future<String> dallEAPI(String Prompt) async {
-    return 'DALL-E';
+  Future<String> dallEAPI(String prompt) async {
+    // return 'DALL-E';
+    // return 'CHATGPT';
+    //store whatever user said
+    _messages.add({
+      "role":"user",
+      "content":prompt,
+    });
+    try {
+      const endpoint = 'https://api.openai.com/v1/images/generations';
+      _openAIAPIkey=api_key;
+      // prompt="yes";
+      print(_openAIAPIkey);
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_openAIAPIkey',
+      };
+      final data = {
+        "prompt" : prompt,
+        "n":1, //number of image u want to generate
+      };
+      //   'prompt' : message,
+      //   'max_tokens':50,// Adjust as needed
+      // };
+
+      final response = await http.post(
+        Uri.parse(endpoint),
+        headers: headers,
+        body: json.encode(data),
+      );
+
+      print(response.body);
+      if (response.statusCode == 200) {
+        String image_url = jsonDecode(response.body)['data'][0]['url'];
+        image_url = image_url.trim();
+        _messages.add({
+          "role":"user",
+          "content":image_url,
+        });
+        return image_url;
+      }
+      // return 'AI';
+      return 'An internal error occurred';
+    } catch (e) {
+      return e.toString();
+    }
   }
 }
