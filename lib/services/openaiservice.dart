@@ -15,7 +15,7 @@ class OpenAIService {
     print('start isartpromptapi');
     try {
     //how to hide the API key? use environment variables or configuration files to store and retrieve your API key securely.
-    //Note that variables below are automatically determined type by dart
+    //Note that variables declared with final below are automatically determined type by dart
     const endpoint = 'https://api.openai.com/v1/audio/translations';
     // _openAIAPIkey=ApiUtil().getAPIkey();
     _openAIAPIkey=api_key;
@@ -44,10 +44,8 @@ class OpenAIService {
         headers: headers,
         body: json.encode(data),
       );
-      // print('yay');
       print(response.body);
       if (response.statusCode == 200) {
-         // print('yay2');
         String content = jsonDecode(response.body)['choices'][0]['message']['content'];
         content = content.trim();
 
@@ -65,7 +63,7 @@ class OpenAIService {
       }
       // return 'AI';
       // return 'An internal error occurred';
-      return '幹,lin,nyahr,lay. ERROR in isArtPromptAPI';
+      return '幹拎娘機掰.isArtPromptAPI 有ERROR啦';
     } catch (e) {
       return e.toString();
     }
@@ -109,7 +107,7 @@ class OpenAIService {
         return content;
       }
       // return 'AI';
-      return '幹,lin,nyahr,lay. ERROR in CHATGPTAPI';
+      return '幹拎娘機掰.CHATGPTAPI 有ERROR啦';
     } catch (e) {
       return e.toString();
     }

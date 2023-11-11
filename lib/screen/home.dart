@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:hey_amy/screen/feature_box.dart';
 import 'package:hey_amy/services/openaiservice.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -11,14 +10,14 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-// _HomePageState ceateState() => _HomePageState();
+  // State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
-  String? _lastWords;
+  String _lastWords="";
   final OpenAIService _openAIService=OpenAIService();
   final _flutterTts = FlutterTts();
   String? _generatedContent;
@@ -27,8 +26,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _initSpeech();
-    _initTextToSpeech();
+
+    _initSpeech();//speech to text initialization method
+    _initTextToSpeech();//flutter tts initialization method
   }
 
   Future<void> _initTextToSpeech() async {
@@ -167,9 +167,11 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Text(
-                  _lastWords == null
-                      ? 'press button and start speak.'
-                      : _lastWords!,
+                  _lastWords.isNotEmpty//isNotEmpty or _speechToText.isListening seems like not work
+                      ? _lastWords
+                      : (_speechEnabled
+                      ? 'Tap the microphone to start listening...'
+                      : 'Speech not available'),
                   style: const TextStyle(
                     color: Pallete.mainFontColor,
                     fontSize: 20,
@@ -224,13 +226,11 @@ class _HomePageState extends State<HomePage> {
         onPressed: () async {
           if (await _speechToText.hasPermission &&
               _speechToText.isNotListening) {
-            print('start listening');
-            print(_lastWords!);
+            // print('start listening');
             _startListening();
           } else if (_speechToText.isListening) {
-            print('stop listening');
-            print(_lastWords!);
-            final speech = await _openAIService.isArtPromptAPI(_lastWords!);
+            // print('stop listening');
+            final speech = await _openAIService.isArtPromptAPI(_lastWords);
             if(speech.contains('https')){
               _generatedImageUrl = speech;
               _generatedContent = null;
@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> {
               setState(() {});
               await _systemSpeak(speech);
             }
-            print(speech);
+            // print(speech);
 
             _stopListening();
           // } else {

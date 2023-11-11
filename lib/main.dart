@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: Pallete.whiteColor,
         ),
       ),
+
       home: const HomePage(),
     );
   }
