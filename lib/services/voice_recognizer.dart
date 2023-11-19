@@ -172,7 +172,7 @@ class VoiceRecognizer {
       await lastWordsCheckForChatGPT():await assistantRepeat();
     // } else {
     //   _initSpeech();
-    // }
+    }
   }
   Future<void> lastWordsCheckForChatGPT() async {
     _startCheckLastWords = false;
