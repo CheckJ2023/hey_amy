@@ -1,16 +1,19 @@
 
 // import 'dart:io';
-
+import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+
 
 class AudioRecorder {
   final FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
   final FlutterSoundRecorder _audioRecorder = FlutterSoundRecorder();
 
-  bool isRecording = false;
-
+  bool _isRecording = false;
+  String _filePath="";
+  bool get isRecording => _isRecording;
+  String get filePath => _filePath;
 
   Future initRecorder() async {
     final status = await Permission.microphone.request();
@@ -23,31 +26,49 @@ class AudioRecorder {
     );
   }
 
-  Future<String> getFilePath() async {
-      final appDir = await getApplicationDocumentsDirectory();
-      // print('${appDir.path}');
-      return '${appDir.path}/audio_file.mp3';
+  StreamBuilder<RecordingDisposition> onProgressWidget() {
+    return StreamBuilder<RecordingDisposition>(
+      stream: _audioRecorder.onProgress,
+      builder: (context, snapshot) {
+        final duration = snapshot.hasData ? snapshot.data!.duration : Duration.zero;
+        String twoDigits(int n) => n.toString().padLeft(2, '0');
+        final twoDigitHours = twoDigits(duration.inHours.remainder(24));
+        final twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+        final twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
 
-      // return '/home/johnc/Documents/app_dev/audio_file.mp3';
-
-
+        return Text(
+          '$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds',
+          style: const TextStyle(
+            fontSize: 50,
+            fontWeight: FontWeight.bold,
+          ),
+        );
+      },
+    );
   }
 
+  Future<String> _getFilePath() async {
+      final appDir = await getApplicationDocumentsDirectory();
+      print('${appDir.path}');
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      return '${appDir.path}/audio_file_$timestamp.mp3';
+      // return '/home/johnc/Documents/app_dev/audio_file.mp3';
+  }
 
   Future startRecording() async {
-    final filePath = await getFilePath();
-    // await _audioRecorder.openAudioSession();
-    await _audioRecorder.startRecorder(
-      toFile: filePath,
-      codec: Codec.mp3,
-    );
-    isRecording = true;
+    _filePath = await _getFilePath();
+    // // await _audioRecorder.openAudioSession();
+    // await _audioRecorder.startRecorder(
+    //   toFile: _filePath,
+    //   codec: Codec.mp3,
+    // );
+    _isRecording = true;
   }
 
   Future stopRecording() async {
-    await _audioRecorder.stopRecorder();
-    // await _audioRecorder.closeAudioSession();
-    isRecording = false;
+    // await _audioRecorder.stopRecorder();
+    // // await _audioRecorder.closeAudioSession();
+    _isRecording = false;
   }
 
   Future playRecording(String filePath) async {
@@ -69,10 +90,10 @@ class AudioRecorder {
     await _audioRecorder.openRecorder();
   }
 
-  Stream<RecordingDisposition>? onProgress() {
-    Stream<RecordingDisposition>?  onprogressTmp = _audioRecorder.onProgress;
-    return onprogressTmp;
-  }
+  // Stream<RecordingDisposition>? onProgress() {
+  //   Stream<RecordingDisposition>?  onprogressTmp = _audioRecorder.onProgress;
+  //   return onprogressTmp;
+  // }
 
 
   void setSubscriptionDuration(Duration duration) {

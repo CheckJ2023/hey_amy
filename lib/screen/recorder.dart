@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import '../services/audio_recorder.dart';
 
 
@@ -26,40 +25,20 @@ class _RecorderState extends State<Recorder> {
     super.dispose();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    setState(() {});
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            //What is StreamBuilder
-            StreamBuilder<RecordingDisposition>(
-                stream: _audioRecorder.onProgress(),
-                builder: (context,snapshot) {
-                  final duration=snapshot.hasData
-                      ? snapshot.data!.duration
-                      :Duration.zero;
-                  String twoDigits(int n) => n.toString().padLeft(2,'0');
-                  final twoDigitHours=
-                      twoDigits(duration.inHours.remainder(24));
-                  final twoDigitMinutes =
-                      twoDigits(duration.inMinutes.remainder(60));
-                  final twoDigitSeconds =
-                      twoDigits(duration.inSeconds.remainder(60));
+            //StreamBuilder and valueListener is for UI Listening to
+            //values change with async or sync way. The values change,
+            // relevant UI change, too.
+            _audioRecorder.onProgressWidget(),
 
-                  return Text(
-                      '$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds'
-                       ,style: const TextStyle(
-                          fontSize:50,
-                          fontWeight: FontWeight.bold,
-                        )
-                  );
-                }
-            ),
-            const SizedBox(height:10),
+            const SizedBox(height: 10),
             SizedBox(
               width: 100,
               height: 100,
@@ -101,8 +80,8 @@ class _RecorderState extends State<Recorder> {
                 backgroundColor: Colors.black,
               ),
               onPressed: () async {
-                final filePath = await _audioRecorder.getFilePath(); // Replace with your audio file path
-                await _audioRecorder.playRecording(filePath);
+                // use getter to obtaining value of file path from AudioRecorder class
+                await _audioRecorder.playRecording(_audioRecorder.filePath);
               },
               child: const Text('Play Recording'),
             ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hey_amy/screen/recorder.dart';
 import 'package:hey_amy/screen/transcripter.dart';
 
-import '../util/pallete.dart';
+import '../model/pallete.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,8 +27,8 @@ class _HomePageState extends State<HomePage> {
   //   Transcripter(),
   // ];
   List<_PageData> pages = [
-    _PageData(title: 'Recorder', page: Recorder()),
     _PageData(title: 'Transcripter', page: Transcripter()),
+    _PageData(title: 'Recorder', page: Recorder()),
     // Add more pages as needed
   ];
 
@@ -37,7 +37,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Pallete.whiteColor,
-        title: const Text( "Hey Amy",
+        title: const Text(
+          "Hey Amy",
           // _appbarTitle.isEmpty ?
           // 'Hey Amy' : _appbarTitle ,
           style: Pallete.appTitleStyle,
@@ -55,10 +56,8 @@ class _HomePageState extends State<HomePage> {
         //   // ),
         //
         // ],
-        leading:
-        PopupMenuButton<int>(
-          icon: const Icon(
-              Icons.menu, color: Pallete.mainFontColor),
+        leading: PopupMenuButton<int>(
+          icon: const Icon(Icons.menu, color: Pallete.mainFontColor),
           onSelected: (int index) {
             // 切换页面
             setState(() {
@@ -74,13 +73,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<PopupMenuEntry<int>> _buildPopupMenuItems() {
-    return pages
-        .asMap()
-        .entries
+    return pages.asMap().entries
         .map((entry) => PopupMenuItem<int>(
-      value: entry.key,
-      child: Text(entry.value.title),
-    ))
+              value: entry.key,
+              child: Text(entry.value.title),
+            ))
         .toList();
   }
 
