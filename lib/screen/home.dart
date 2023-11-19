@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hey_amy/screen/ai_assistant.dart';
 import 'package:hey_amy/screen/recorder.dart';
 import 'package:hey_amy/screen/transcripter.dart';
 
@@ -19,6 +20,7 @@ class _PageData {
 }
 
 class _HomePageState extends State<HomePage> {
+  String _appbarTitle='';
   int _selectedIndex = 0;
 
   // 定义页面列表
@@ -26,9 +28,10 @@ class _HomePageState extends State<HomePage> {
   //   Recorder(),
   //   Transcripter(),
   // ];
-  List<_PageData> pages = [
-    _PageData(title: 'Transcripter', page: Transcripter()),
+  List<_PageData> _pages = [
+    _PageData(title: 'ai_assistant', page: AIAssistant()),
     _PageData(title: 'Recorder', page: Recorder()),
+    _PageData(title: 'Transcripter', page: Transcripter()),
     // Add more pages as needed
   ];
 
@@ -38,7 +41,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Pallete.whiteColor,
         title: const Text(
-          "Hey Amy",
+          "Voice Assistant",
           // _appbarTitle.isEmpty ?
           // 'Hey Amy' : _appbarTitle ,
           style: Pallete.appTitleStyle,
@@ -73,7 +76,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<PopupMenuEntry<int>> _buildPopupMenuItems() {
-    return pages.asMap().entries
+    return _pages.asMap().entries
         .map((entry) => PopupMenuItem<int>(
               value: entry.key,
               child: Text(entry.value.title),
@@ -82,6 +85,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildPage(int index) {
-    return pages[index].page;
+    return _pages[index].page;
   }
 }

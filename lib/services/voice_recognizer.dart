@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:hey_amy/services/openai_service.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/foundation.dart';
 
 class VoiceRecognizer {
   final SpeechToText _speechToText = SpeechToText();
+  final OpenAIService _openAIService = OpenAIService();
   final ValueNotifier<bool> isListeningNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isNotListeningNotifier = ValueNotifier<bool>(false);
   // final ValueNotifier<bool> wordsConfirmedNotifier = ValueNotifier<bool>(false);
@@ -18,6 +20,8 @@ class VoiceRecognizer {
   final _flutterTts = FlutterTts();
   bool _speechEnabled = false;
   bool _startCheckLastWords=false;
+  bool _startTts=false;
+  String _lastWords_bk = "";
   String _lastWords = "";
   String _assistantAnswer = "";
 
@@ -86,22 +90,26 @@ class VoiceRecognizer {
     await _flutterTts.speak(content);
   }
 
+  Future<void> _stopSystemSpeak() async {
+    await _flutterTts.pause();
+  }
+
   void stopSpeechToText() {
     _speechToText.stop();
     _flutterTts.stop();
   }
 
   void voiceRecognizing() async {
+
     if (await _speechToText.hasPermission &&
         _speechToText.isNotListening) {
+      _startTts? _stopSystemSpeak():_startTts=true;
       _startListening();
     } else if (_speechToText.isListening) {
       _stopListening();
-      if(_startCheckLastWords) {
-        await lastWordsCheck();
-      }else{
-        await assistantRepeat();
-      }
+      _startCheckLastWords?
+        await lastWordsCheck():await assistantRepeat();
+
     } else {
       _initSpeech();
     }
@@ -119,29 +127,62 @@ class VoiceRecognizer {
       _assistantAnswer = "Did you say ? $_lastWords.";
       // _assistantAnswer = "你在說三小朋友";
     } else {
-      _assistantAnswer = "請說話";
+      _assistantAnswer = "Please talk.";
     }
     assistantAnswerNotifier.value = _assistantAnswer;
     _systemSpeak(_assistantAnswer);
 
     if (_lastWords.isNotEmpty) {
       _startCheckLastWords = true;
-      _lastWords = '';
+      _lastWords_bk=_lastWords;
+      _lastWords = ''; //!!!Need to check if clean _lastWords is available
+      //for restart the speech to text plugin
     }
   }
 
   Future<void> lastWordsCheck() async {
-      _startCheckLastWords = false;
+    _startCheckLastWords = false;
       switch (_lastWords) {
         case 'Yes':
         case 'yes':
         case 'Yes.':
         case 'yes.':
           _assistantAnswer ="OK";
+
         default:
-          _assistantAnswer ="I understand";
+          _assistantAnswer ="Please try again.";
     }
-      assistantAnswerNotifier.value = _assistantAnswer;
-      _systemSpeak(_assistantAnswer);
+    assistantAnswerNotifier.value = _assistantAnswer;
+    _systemSpeak(_assistantAnswer);
+  }
+
+
+  void voiceRecognizingForChatGPT() async {
+    if (await _speechToText.hasPermission &&
+        _speechToText.isNotListening) {
+      _startListening();
+    } else if (_speechToText.isListening) {
+      _stopListening();
+      _startCheckLastWords?
+      await lastWordsCheckForChatGPT():await assistantRepeat();
+    // } else {
+    //   _initSpeech();
+    }
+  }
+  Future<void> lastWordsCheckForChatGPT() async {
+    _startCheckLastWords = false;
+    switch (_lastWords) {
+      case 'Yes':
+      case 'yes':
+      case 'Yes.':
+      case 'yes.':
+        _assistantAnswer = await _openAIService.chatGPTAPI(_lastWords_bk);
+        _lastWords_bk='';
+      default:
+        _assistantAnswer ="Please try again.";
+    }
+    assistantAnswerNotifier.value = _assistantAnswer;
+    _systemSpeak(_assistantAnswer);
+
   }
 }

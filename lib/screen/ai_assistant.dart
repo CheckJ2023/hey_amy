@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import '../model/pallete.dart';
 import '../services/voice_recognizer.dart';
 
-class Transcripter extends StatefulWidget {
-  const Transcripter({super.key});
+
+class AIAssistant extends StatefulWidget {
+  const AIAssistant({super.key});
 
   @override
-  State<Transcripter> createState() => _TranscripterState();
+  State<AIAssistant> createState() => _AIAssistantState();
 }
 
-class _TranscripterState extends State<Transcripter> {
+class _AIAssistantState extends State<AIAssistant> {
   final VoiceRecognizer _voiceRecognizer = VoiceRecognizer();
   bool _isMicButtonPressed = false;
 
@@ -40,13 +41,13 @@ class _TranscripterState extends State<Transcripter> {
               children: [
                 Center(
                     child: Container(
-                  height: 120,
-                  width: 120,
-                  margin: const EdgeInsets.only(top: 4),
-                  decoration: const BoxDecoration(
-                      color: Pallete.assistantCircleColor,
-                      shape: BoxShape.circle),
-                )),
+                      height: 120,
+                      width: 120,
+                      margin: const EdgeInsets.only(top: 4),
+                      decoration: const BoxDecoration(
+                          color: Pallete.assistantCircleColor,
+                          shape: BoxShape.circle),
+                    )),
                 Container(
                   height: 123,
                   decoration: const BoxDecoration(
@@ -88,7 +89,7 @@ class _TranscripterState extends State<Transcripter> {
                       style: TextStyle(
                         color: Pallete.mainFontColor,
                         fontSize:
-                            assistantAnswer.isEmpty ? 20 : 18,
+                        assistantAnswer.isEmpty ? 20 : 18,
                         fontWeight: FontWeight.bold,
                       ),
                     );
@@ -124,8 +125,8 @@ class _TranscripterState extends State<Transcripter> {
                           lastWords.isNotEmpty //isNotEmpty or _speechToText.isListening seems like not work
                               ? lastWords
                               : (speechEnabled
-                                  ? '...'
-                                  : 'Speech not available'),
+                              ? '...'
+                              : 'Speech not available'),
                           style: const TextStyle(
                             color: Pallete.mainFontColor,
                             fontSize: 20,
@@ -142,24 +143,22 @@ class _TranscripterState extends State<Transcripter> {
         ),
       ),
       floatingActionButton: ValueListenableBuilder<bool>(
-          valueListenable: _voiceRecognizer.isNotListeningNotifier,
-          builder: (context, isNotListening, child) {
+          valueListenable: _voiceRecognizer.isListeningNotifier,
+          builder: (context, isListening, child) {
             return FloatingActionButton(
-              backgroundColor: isNotListening ?
-               Pallete.firstSuggestionBoxColor
-                  : Colors.red[200],
+              backgroundColor: isListening ?
+              Colors.red[200]
+                  : Pallete.firstSuggestionBoxColor ,
               onPressed: () {
                 _isMicButtonPressed? _isMicButtonPressed=false:
-                    _isMicButtonPressed=true;
-                _voiceRecognizer.voiceRecognizing();
+                _isMicButtonPressed=true;
+                _voiceRecognizer.voiceRecognizingForChatGPT();
                 setState(() {});
                 // print('FloatingActionButton');
                 _voiceRecognizer.updateNotifier();
               },
               child: Icon(
-                 // isNotListening ? Icons.mic_off : Icons.mic,
-                // Icons.mic,
-                _isMicButtonPressed ? Icons.mic: Icons.mic_off,
+                _isMicButtonPressed & isListening ? Icons.mic: Icons.mic_off,
                 color: Pallete.blackColor,
               ),
             );
