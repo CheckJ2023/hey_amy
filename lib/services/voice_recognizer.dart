@@ -10,18 +10,23 @@ import 'package:flutter/foundation.dart';
 class VoiceRecognizer {
   final SpeechToText _speechToText = SpeechToText();
   final OpenAIService _openAIService = OpenAIService();
+
   final ValueNotifier<bool> isListeningNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isNotListeningNotifier = ValueNotifier<bool>(false);
   // final ValueNotifier<bool> wordsConfirmedNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> speechEnabledNotifier = ValueNotifier<bool>(false);
-  ValueNotifier<String> lastWordsNotifier = ValueNotifier<String>('');
-  final ValueNotifier<String> assistantAnswerNotifier = ValueNotifier<String>(
-      '');
+  final ValueNotifier<String> lastWordsNotifier = ValueNotifier<String>('');
+  final ValueNotifier<String> assistantAnswerNotifier = ValueNotifier<String>('');
+
+
+  final ValueNotifier<bool> gptIsLoadingNotifier = ValueNotifier<bool>(false);
+
+
   final _flutterTts = FlutterTts();
   bool _speechEnabled = false;
   bool _startCheckLastWords=false;
-  bool _startTts=false;
-  String _lastWords_bk = "";
+  // bool _startTts=false;
+  String _lastWordsBk = "";
   String _lastWords = "";
   String _assistantAnswer = "";
 
@@ -35,7 +40,7 @@ class VoiceRecognizer {
   void iniSpeechToText() {
     _initSpeech(); //speech to text initialization method
     _initTextToSpeech(); //flutter tts initialization method
-    // print('iniSpeechToText');
+    print('iniSpeechToText');
     // updateNotifier();
   }
 
@@ -50,7 +55,7 @@ class VoiceRecognizer {
   Future<void> _initSpeech() async {
     _speechEnabled = await _speechToText.initialize();
     speechEnabledNotifier.value = _speechEnabled;
-    // print('_initSpeech');
+    print('_initSpeech');
     updateNotifier();
     // setState(() {}); //this is moved to initilaiation in transcripter.
   }
@@ -58,7 +63,7 @@ class VoiceRecognizer {
   /// Each time to start a speech recognition session
   void _startListening() async {
     await _speechToText.listen(onResult: _onSpeechResult);
-    // print('_startListening');
+    print('_startListening');
     updateNotifier();
     // setState(() {});
   }
@@ -69,7 +74,7 @@ class VoiceRecognizer {
   /// listen method.
   void _stopListening() async {
     await _speechToText.stop();
-    // print('_stopListening');
+    print('_stopListening');
     updateNotifier();
     // setState(() {});
   }
@@ -81,7 +86,7 @@ class VoiceRecognizer {
     _lastWords = result.recognizedWords;
     lastWordsNotifier.value = _lastWords;
     print(_lastWords);
-    // print('_onSpeechResult');
+    print('_onSpeechResult');
     updateNotifier();
     // });
   }
@@ -90,9 +95,9 @@ class VoiceRecognizer {
     await _flutterTts.speak(content);
   }
 
-  Future<void> _stopSystemSpeak() async {
-    await _flutterTts.pause();
-  }
+  // Future<void> _stopSystemSpeak() async {
+  //   await _flutterTts.pause();
+  // }
 
   void stopSpeechToText() {
     _speechToText.stop();
@@ -103,7 +108,7 @@ class VoiceRecognizer {
 
     if (await _speechToText.hasPermission &&
         _speechToText.isNotListening) {
-      _startTts? _stopSystemSpeak():_startTts=true;
+      // _startTts? _stopSystemSpeak():_startTts=true; //not working
       _startListening();
     } else if (_speechToText.isListening) {
       _stopListening();
@@ -118,8 +123,8 @@ class VoiceRecognizer {
   void updateNotifier() {
     isListeningNotifier.value = _speechToText.isListening;
     isNotListeningNotifier.value = _speechToText.isNotListening;
-    // print('${_speechToText.isListening}');
-    // print('${_speechToText.isNotListening}');
+    print('listening: ${_speechToText.isListening}');
+    print('notlistening: ${_speechToText.isNotListening}');
   }
 
   Future<void> assistantRepeat() async {
@@ -134,7 +139,7 @@ class VoiceRecognizer {
 
     if (_lastWords.isNotEmpty) {
       _startCheckLastWords = true;
-      _lastWords_bk=_lastWords;
+      _lastWordsBk=_lastWords;
       _lastWords = ''; //!!!Need to check if clean _lastWords is available
       //for restart the speech to text plugin
     }
@@ -167,7 +172,7 @@ class VoiceRecognizer {
       await lastWordsCheckForChatGPT():await assistantRepeat();
     // } else {
     //   _initSpeech();
-    }
+    // }
   }
   Future<void> lastWordsCheckForChatGPT() async {
     _startCheckLastWords = false;
@@ -176,8 +181,10 @@ class VoiceRecognizer {
       case 'yes':
       case 'Yes.':
       case 'yes.':
-        _assistantAnswer = await _openAIService.chatGPTAPI(_lastWords_bk);
-        _lastWords_bk='';
+        gptIsLoadingNotifier.value = true;
+        _assistantAnswer = await _openAIService.chatGPTAPI(_lastWordsBk);
+        _lastWordsBk='';
+        gptIsLoadingNotifier.value = false;
       default:
         _assistantAnswer ="Please try again.";
     }

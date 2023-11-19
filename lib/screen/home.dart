@@ -3,7 +3,7 @@ import 'package:hey_amy/screen/ai_assistant.dart';
 import 'package:hey_amy/screen/recorder.dart';
 import 'package:hey_amy/screen/transcripter.dart';
 
-import '../model/pallete.dart';
+import 'package:hey_amy/model/pallete.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

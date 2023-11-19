@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../model/pallete.dart';
-import '../services/voice_recognizer.dart';
+import 'package:hey_amy/model/pallete.dart';
+import 'package:hey_amy/services/voice_recognizer.dart';
 
 class Transcripter extends StatefulWidget {
   const Transcripter({super.key});
@@ -53,7 +53,7 @@ class _TranscripterState extends State<Transcripter> {
                       shape: BoxShape.circle,
                       image: DecorationImage(
                         image: AssetImage(
-                          '../assets/virtualAssistant.png',
+                          'assets/virtualAssistant.png',
                         ),
                       )),
                 ),

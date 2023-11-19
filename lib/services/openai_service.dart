@@ -1,9 +1,7 @@
 import 'dart:convert';
-
-import 'package:hey_amy/services/voice_recognizer.dart';
 import 'package:http/http.dart' as http;
 
-import '../model/api_util.dart';
+import 'package:hey_amy/model/api_util.dart';
 
 class OpenAIService {
 

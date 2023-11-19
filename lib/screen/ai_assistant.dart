@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hey_amy/screen/loading_animation.dart';
 
-import '../model/pallete.dart';
-import '../services/voice_recognizer.dart';
+import 'package:hey_amy/model/pallete.dart';
+import 'package:hey_amy/services/voice_recognizer.dart';
 
 
 class AIAssistant extends StatefulWidget {
@@ -13,10 +14,11 @@ class AIAssistant extends StatefulWidget {
 
 class _AIAssistantState extends State<AIAssistant> {
   final VoiceRecognizer _voiceRecognizer = VoiceRecognizer();
+  final LoadingAnimation _loadingAnimation = const LoadingAnimation();
   bool _isMicButtonPressed = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _voiceRecognizer.iniSpeechToText();
     print('initialization');
@@ -41,20 +43,20 @@ class _AIAssistantState extends State<AIAssistant> {
               children: [
                 Center(
                     child: Container(
-                      height: 120,
-                      width: 120,
-                      margin: const EdgeInsets.only(top: 4),
-                      decoration: const BoxDecoration(
-                          color: Pallete.assistantCircleColor,
-                          shape: BoxShape.circle),
-                    )),
+                  height: 120,
+                  width: 120,
+                  margin: const EdgeInsets.only(top: 4),
+                  decoration: const BoxDecoration(
+                      color: Pallete.assistantCircleColor,
+                      shape: BoxShape.circle),
+                )),
                 Container(
                   height: 123,
                   decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       image: DecorationImage(
                         image: AssetImage(
-                          '../assets/virtualAssistant.png',
+                          'assets/virtualAssistant.png',
                         ),
                       )),
                 ),
@@ -79,20 +81,27 @@ class _AIAssistantState extends State<AIAssistant> {
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: ValueListenableBuilder<String>(
-                  valueListenable: _voiceRecognizer.assistantAnswerNotifier,
-                  builder: (context, assistantAnswer, child) {
-                    return Text(
-                      assistantAnswer.isEmpty
-                          ? '...'
-                          : assistantAnswer,
-                      style: TextStyle(
-                        color: Pallete.mainFontColor,
-                        fontSize:
-                        assistantAnswer.isEmpty ? 20 : 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: _voiceRecognizer.gptIsLoadingNotifier,
+                  builder: (context, gptIsLoading, child) {
+                    return gptIsLoading
+                        ? _loadingAnimation
+                        : ValueListenableBuilder<String>(
+                            valueListenable:
+                                _voiceRecognizer.assistantAnswerNotifier,
+                            builder: (context, assistantAnswer, child) {
+                              return Text(
+                                assistantAnswer.isEmpty
+                                    ? '...'
+                                    : assistantAnswer,
+                                style: TextStyle(
+                                  color: Pallete.mainFontColor,
+                                  fontSize: assistantAnswer.isEmpty ? 20 : 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
+                          );
                   },
                 ),
               ),
@@ -122,11 +131,12 @@ class _AIAssistantState extends State<AIAssistant> {
                       valueListenable: _voiceRecognizer.speechEnabledNotifier,
                       builder: (context, speechEnabled, child) {
                         return Text(
-                          lastWords.isNotEmpty //isNotEmpty or _speechToText.isListening seems like not work
+                          lastWords
+                                  .isNotEmpty //isNotEmpty or _speechToText.isListening seems like not work
                               ? lastWords
                               : (speechEnabled
-                              ? '...'
-                              : 'Speech not available'),
+                                  ? '...'
+                                  : 'Speech not available'),
                           style: const TextStyle(
                             color: Pallete.mainFontColor,
                             fontSize: 20,
@@ -142,27 +152,28 @@ class _AIAssistantState extends State<AIAssistant> {
           ],
         ),
       ),
-      floatingActionButton: ValueListenableBuilder<bool>(
-          valueListenable: _voiceRecognizer.isListeningNotifier,
-          builder: (context, isListening, child) {
-            return FloatingActionButton(
-              backgroundColor: isListening ?
-              Colors.red[200]
-                  : Pallete.firstSuggestionBoxColor ,
-              onPressed: () {
-                _isMicButtonPressed? _isMicButtonPressed=false:
-                _isMicButtonPressed=true;
-                _voiceRecognizer.voiceRecognizingForChatGPT();
-                setState(() {});
-                // print('FloatingActionButton');
-                _voiceRecognizer.updateNotifier();
-              },
-              child: Icon(
-                _isMicButtonPressed & isListening ? Icons.mic: Icons.mic_off,
+      floatingActionButton: FloatingActionButton(
+        // backgroundColor: isListening
+        //     ? Colors.red[200]
+        //     : Pallete.firstSuggestionBoxColor,
+        backgroundColor: Pallete.firstSuggestionBoxColor,
+        onPressed: () {
+          _isMicButtonPressed
+              ? _isMicButtonPressed = false
+              : _isMicButtonPressed = true;
+          _voiceRecognizer.voiceRecognizingForChatGPT();
+          setState(() {});
+          print('FloatingActionButton');
+          _voiceRecognizer.updateNotifier();
+        },
+        child: ValueListenableBuilder<bool>(
+            valueListenable: _voiceRecognizer.isListeningNotifier,
+            builder: (context, isListening, child) {
+              return Icon(
+                _isMicButtonPressed && isListening ? Icons.mic : Icons.mic_off,
                 color: Pallete.blackColor,
-              ),
-            );
-          }
+              );
+            }),
       ),
     );
   }

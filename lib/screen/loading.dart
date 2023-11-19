@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 
+import 'package:hey_amy/screen/loading_animation.dart';
+
 class Loading extends StatefulWidget {
   @override
   State<Loading> createState() => _LoadingState();
 }
 
 class _LoadingState extends State<Loading> {
+  final LoadingAnimation _loadingAnimation = const LoadingAnimation();
 
   // String time = 'loading';
 
-
-  void _ini_setup() async {
+  void _iniSetup() async {
     // WorldTime instance = WorldTime(location: 'Berlin', flag:'germany.png', url:'Europe/Berlin');
     // await instance.getTime();
     // // print(instance.time);
@@ -27,18 +29,17 @@ class _LoadingState extends State<Loading> {
     //     'isDaytime': instance.isDaytime,
     //   });
 
-     await Future.delayed(const Duration(seconds: 2),() async {
-
-         await Navigator.pushNamed(context,'/home');
-         setState(() {});
-     });
+    await Future.delayed(const Duration(seconds: 2), () async {
+      await Navigator.pushNamed(context, '/home');
+      setState(() {});
+    });
   }
 
   @override
   void initState() {
     super.initState();
 
-    _ini_setup();
+    _iniSetup();
     // print('hey there!');
   }
 
@@ -69,17 +70,7 @@ class _LoadingState extends State<Loading> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      // color: Colors.green,
-                      color: Colors.black,
-                      // backgroundColor: Colors.amberAccent,
-                      backgroundColor: Colors.grey,
-                      strokeWidth: 2.0,
-                    ),
-                  ),
+                  _loadingAnimation,
                   Container(
                     margin: const EdgeInsets.only(left: 10),
                     child: const Text(

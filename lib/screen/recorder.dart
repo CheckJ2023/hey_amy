@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/audio_recorder.dart';
+import 'package:hey_amy/services/audio_recorder.dart';
 
 
 class Recorder extends StatefulWidget {
