@@ -1,0 +1,38 @@
+import 'package:flutter/material.dart';
+
+class VoiceRecognizerModel{
+  // bool? _isListening;
+  // bool? _isNotListening;
+  // bool? _wordsConfirmed;
+  // bool? _speechEnabled;
+  // String? _lastWords;
+  // String? _assistantAnswer;
+  ValueNotifier<bool> isListeningNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> isNotListeningNotifier = ValueNotifier<bool>(true);
+  ValueNotifier<bool> wordsConfirmedNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<bool> speechEnabledNotifier = ValueNotifier<bool>(false);
+  ValueNotifier<String> lastWordsNotifier = ValueNotifier<Strng>('');
+  ValueNotifier<String> assistantAnswerNotifier = ValueNotifier<Strng>('');
+
+  // bool get isListening => _isListening!;
+  // bool get isNotListening => _isNotListening!;
+  // bool get wordsConfirmed => _wordsConfirmed! ;
+  // bool get speechEnabled => _speechEnabled!;
+  // String get lastWords => _lastWords!;
+  // String get assistantAnswer => _assistantAnswer!;
+
+  VoiceRecognizerModel({
+    required this.isListeningNotifier, required bool isNotListening,
+    required bool wordsConfirmed, required bool speechEnabled,
+    required String lastWords, required String assistantAnswer})
+
+}
+
+class VoiceRecognizerNotifier extends ValueNotifier<VoiceRecognizerModel> {
+  VoiceRecognizerNotifier(VoiceRecognizerModel data) : super(data);
+
+  void updateIsListening(bool isListening) {
+    data.
+  }
+
+}

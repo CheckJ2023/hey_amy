@@ -45,4 +45,8 @@ app.*.map.json
 
 # The file that includes api key
 /lib/model/api_util.dart
-mychatgpt.json 
+
+mychatgpt.json
+*bk
+*Bk
+test.html
