@@ -158,6 +158,7 @@ class _AIAssistantState extends State<AIAssistant> {
         //     : Pallete.firstSuggestionBoxColor,
         backgroundColor: Pallete.firstSuggestionBoxColor,
         onPressed: () {
+
           _isMicButtonPressed
               ? _isMicButtonPressed = false
               : _isMicButtonPressed = true;

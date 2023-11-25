@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hey_amy/services/openai_service.dart';
@@ -25,6 +27,10 @@ class VoiceRecognizer {
   final _flutterTts = FlutterTts();
   bool _speechEnabled = false;
   bool _startCheckLastWords=false;
+  bool _sttIsRunning=false;
+  bool _sttIsNotRunning=true;
+  bool _chatgptEnabled = false;
+  bool _transcripterEnabled = false;
   // bool _startTts=false;
   String _lastWordsBk = "";
   String _lastWords = "";
@@ -85,9 +91,22 @@ class VoiceRecognizer {
     // setState(() {
     _lastWords = result.recognizedWords;
     lastWordsNotifier.value = _lastWords;
-    print(_lastWords);
+
     print('_onSpeechResult');
+    print(_lastWords);
     updateNotifier();
+    if (_speechToText.isNotListening) {
+      if(_transcripterEnabled) {
+        _transcripterEnabled=false;
+        _startCheckLastWords ?
+        lastWordsCheck() : assistantRepeat();
+      }
+      if(_chatgptEnabled) {
+        _chatgptEnabled=false;
+        _startCheckLastWords ?
+        lastWordsCheckForChatGPT() : assistantRepeat();
+      }
+    }
     // });
   }
 
@@ -104,8 +123,16 @@ class VoiceRecognizer {
     _flutterTts.stop();
   }
 
-  void voiceRecognizing() async {
+  void updateNotifier() {
+    isListeningNotifier.value = _speechToText.isListening;
+    isNotListeningNotifier.value = _speechToText.isNotListening;
+    print('listening: ${_speechToText.isListening}');
+    print('notlistening: ${_speechToText.isNotListening}');
+  }
 
+
+  void voiceRecognizing() async {
+    _transcripterEnabled = true;
     if (await _speechToText.hasPermission &&
         _speechToText.isNotListening) {
       // _startTts? _stopSystemSpeak():_startTts=true; //not working
@@ -120,12 +147,6 @@ class VoiceRecognizer {
     }
   }
 
-  void updateNotifier() {
-    isListeningNotifier.value = _speechToText.isListening;
-    isNotListeningNotifier.value = _speechToText.isNotListening;
-    print('listening: ${_speechToText.isListening}');
-    print('notlistening: ${_speechToText.isNotListening}');
-  }
 
   Future<void> assistantRepeat() async {
     if (_lastWords.isNotEmpty) {
@@ -163,17 +184,21 @@ class VoiceRecognizer {
 
 
   void voiceRecognizingForChatGPT() async {
+    _chatgptEnabled = true;
+
     if (await _speechToText.hasPermission &&
         _speechToText.isNotListening) {
       _startListening();
-    } else if (_speechToText.isListening) {
-      _stopListening();
+    }
+    if (_speechToText.isListening) {
       _startCheckLastWords?
       await lastWordsCheckForChatGPT():await assistantRepeat();
-    // } else {
-    //   _initSpeech();
+      _stopListening();
+    } else {
+      _initSpeech();
     }
   }
+
   Future<void> lastWordsCheckForChatGPT() async {
     _startCheckLastWords = false;
     switch (_lastWords) {
@@ -181,9 +206,28 @@ class VoiceRecognizer {
       case 'yes':
       case 'Yes.':
       case 'yes.':
+      case '是':
+      case '是的' :
         gptIsLoadingNotifier.value = true;
-        _assistantAnswer = await _openAIService.chatGPTAPI(_lastWordsBk);
-        _lastWordsBk='';
+        // _lastWordsBk='你好，我是約翰';
+        //Note:convert utf16 string(flutter default type) to utf8 string
+        //After some tests i found web version don't need to convert to utf8
+        //but the gpt will response utf8 chinese characters that must
+        //be converted before send it to the flutter tts.
+
+        final String utf8StringPrompt=_stringConverterUTF16toUTF8(_lastWordsBk);
+        print(utf8StringPrompt);
+        print(_stringConverterUTF8toUTF16(utf8StringPrompt));
+
+        //Note:chatgpt
+        // String utf8StringResponse = await _openAIService.chatGPTAPI(utf8StringPrompt);
+         String utf8StringResponse = await _openAIService.chatGPTAPI(_lastWordsBk);
+
+         //Note:The ChatGPT response chinese with utf8 string that must be
+         //converted before using it.
+         _assistantAnswer=_stringConverterUTF8toUTF16(utf8StringResponse);
+         //Note: Clean the _lastWordsBk
+         _lastWordsBk='';
         gptIsLoadingNotifier.value = false;
       default:
         _assistantAnswer ="Please try again.";
@@ -191,5 +235,20 @@ class VoiceRecognizer {
     assistantAnswerNotifier.value = _assistantAnswer;
     _systemSpeak(_assistantAnswer);
 
+  }
+
+  _stringConverterUTF16toUTF8(String utf16String){
+    List<int> utf8Bytes = utf8.encode(utf16String);
+    String utf8String = String.fromCharCodes(utf8Bytes);
+    // print(utf8String);
+    return utf8String;
+  }
+
+  _stringConverterUTF8toUTF16(String utf8String){
+    List<int> utf8Bytes = utf8String.codeUnits;
+    final utf16String = utf8.decode(utf8Bytes);
+    // String utf16String = String.fromCharCodes(utf8.decode(utf8Bytes));
+    // print(utf16String);
+    return utf16String;
   }
 }

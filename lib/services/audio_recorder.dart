@@ -48,8 +48,9 @@ class AudioRecorder {
 
   Future<String> _getFilePath() async {
       final appDir = await getApplicationDocumentsDirectory();
-      print('${appDir.path}');
+      print('file path is : ${appDir.path}');
       final timestamp = DateTime.now().millisecondsSinceEpoch;
+      print('file path is : ${appDir.path}/audio_file_$timestamp.mp3');
       return '${appDir.path}/audio_file_$timestamp.mp3';
       // return '/home/johnc/Documents/app_dev/audio_file.mp3';
   }
