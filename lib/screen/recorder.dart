@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:hey_amy/services/audio_recorder.dart';
-
 
 class Recorder extends StatefulWidget {
   const Recorder({super.key});
@@ -36,7 +36,25 @@ class _RecorderState extends State<Recorder> {
             //StreamBuilder and valueListener is for UI Listening to
             //values change with async or sync way. The values change,
             // relevant UI change, too.
-            _audioRecorder.onProgressWidget(),
+            // _audioRecorder.onProgressWidget(),
+            StreamBuilder<RecordingDisposition>(
+                stream: _audioRecorder.onProgress,
+                builder: (context, snapshot) {
+                  final duration = snapshot.hasData ? snapshot.data!.duration : Duration.zero;
+                  String twoDigits(int n) => n.toString().padLeft(2, '0');
+                  final twoDigitHours = twoDigits(duration.inHours.remainder(24));
+                  final twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+                  final twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+
+                  return Text(
+                    '$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds',
+                    style: const TextStyle(
+                      fontSize: 50,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                },
+            ),
 
             const SizedBox(height: 10),
             SizedBox(

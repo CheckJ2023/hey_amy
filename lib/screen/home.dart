@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hey_amy/screen/ai_assistant.dart';
 import 'package:hey_amy/screen/recorder.dart';
+import 'package:hey_amy/screen/setting_page.dart';
 import 'package:hey_amy/screen/transcripter.dart';
 
 import 'package:hey_amy/model/pallete.dart';
+
+import '../services/setting_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -29,9 +32,10 @@ class _HomePageState extends State<HomePage> {
   //   Transcripter(),
   // ];
   List<_PageData> _pages = [
-    _PageData(title: 'ai_assistant', page: AIAssistant()),
-    _PageData(title: 'Recorder', page: Recorder()),
-    _PageData(title: 'Transcripter', page: Transcripter()),
+    _PageData(title: 'Voice Assistant', page: AIAssistant()),
+    _PageData(title: 'Settings', page: SettingPage())
+    // _PageData(title: 'Recorder', page: Recorder()),
+    // _PageData(title: 'Transcripter', page: Transcripter()),
     // Add more pages as needed
   ];
 

@@ -1,5 +1,6 @@
 
-import 'package:flutter/material.dart';
+import 'dart:io';
+
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -14,6 +15,8 @@ class AudioRecorder {
   bool get isRecording => _isRecording;
   String get filePath => _filePath;
 
+  get onProgress => _audioRecorder.onProgress;
+
   Future initRecorder() async {
     final status = await Permission.microphone.request();
     if (status != PermissionStatus.granted) {
@@ -25,29 +28,29 @@ class AudioRecorder {
     );
   }
 
-  StreamBuilder<RecordingDisposition> onProgressWidget() {
-    return StreamBuilder<RecordingDisposition>(
-      stream: _audioRecorder.onProgress,
-      builder: (context, snapshot) {
-        final duration = snapshot.hasData ? snapshot.data!.duration : Duration.zero;
-        String twoDigits(int n) => n.toString().padLeft(2, '0');
-        final twoDigitHours = twoDigits(duration.inHours.remainder(24));
-        final twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-        final twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-
-        return Text(
-          '$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds',
-          style: const TextStyle(
-            fontSize: 50,
-            fontWeight: FontWeight.bold,
-          ),
-        );
-      },
-    );
-  }
+  // StreamBuilder<RecordingDisposition> onProgressWidget() {
+  //   return StreamBuilder<RecordingDisposition>(
+  //     stream: _audioRecorder.onProgress,
+  //     builder: (context, snapshot) {
+  //       final duration = snapshot.hasData ? snapshot.data!.duration : Duration.zero;
+  //       String twoDigits(int n) => n.toString().padLeft(2, '0');
+  //       final twoDigitHours = twoDigits(duration.inHours.remainder(24));
+  //       final twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+  //       final twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+  //
+  //       return Text(
+  //         '$twoDigitHours:$twoDigitMinutes:$twoDigitSeconds',
+  //         style: const TextStyle(
+  //           fontSize: 50,
+  //           fontWeight: FontWeight.bold,
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   Future<String> _getFilePath() async {
-      final appDir = await getApplicationDocumentsDirectory();
+      final Directory appDir = await getApplicationDocumentsDirectory();
       print('file path is : ${appDir.path}');
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       print('file path is : ${appDir.path}/audio_file_$timestamp.mp3');
@@ -56,18 +59,21 @@ class AudioRecorder {
   }
 
   Future startRecording() async {
-    _filePath = await _getFilePath();
-    // // await _audioRecorder.openAudioSession();
-    // await _audioRecorder.startRecorder(
-    //   toFile: _filePath,
-    //   codec: Codec.mp3,
-    // );
+    // _filePath = await _getFilePath();
+
+    // await _audioRecorder.openAudioSession();
+    await _audioRecorder.startRecorder(
+        toFile: 'audio'
+      // toFile: _filePath,
+      // codec: Codec.mp3,
+    );
     _isRecording = true;
   }
 
   Future stopRecording() async {
-    // await _audioRecorder.stopRecorder();
-    // // await _audioRecorder.closeAudioSession();
+    final path = await _audioRecorder.stopRecorder();
+    final audioFile = File(path!);
+    // await _audioRecorder.closeAudioSession();
     _isRecording = false;
   }
 
@@ -101,3 +107,5 @@ class AudioRecorder {
   }
 
 }
+
+

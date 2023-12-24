@@ -7,8 +7,8 @@ void main() =>  runApp(MaterialApp(
   initialRoute: '/',
   //routes is a map in java? = a dictionary in python?
   routes: {
-    '/':(content) => Loading(),
-    '/home':(content) => HomePage(),
+    '/':(content) => const HomePage(),
+    // '/':(content) => Loading(),
+    // '/home':(content) => HomePage(),
   } ,
 ));
-

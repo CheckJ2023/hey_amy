@@ -28,7 +28,6 @@ class _AIAssistantState extends State<AIAssistant> {
   @override
   void dispose() {
     _voiceRecognizer.stopSpeechToText();
-    setState(() {});
     super.dispose();
   }
 

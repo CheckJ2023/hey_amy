@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hey_amy/services/openai_service.dart';
+import 'package:hey_amy/services/setting_service.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:flutter/foundation.dart';
@@ -15,14 +16,12 @@ class VoiceRecognizer {
 
   final ValueNotifier<bool> isListeningNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> isNotListeningNotifier = ValueNotifier<bool>(false);
-  // final ValueNotifier<bool> wordsConfirmedNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<bool> speechEnabledNotifier = ValueNotifier<bool>(false);
   final ValueNotifier<String> lastWordsNotifier = ValueNotifier<String>('');
   final ValueNotifier<String> assistantAnswerNotifier = ValueNotifier<String>('');
 
-
   final ValueNotifier<bool> gptIsLoadingNotifier = ValueNotifier<bool>(false);
-
+  final SettingService _settingService = SettingService();
 
   final _flutterTts = FlutterTts();
   bool _speechEnabled = false;
@@ -31,21 +30,14 @@ class VoiceRecognizer {
   bool _sttIsNotRunning=true;
   bool _chatgptEnabled = false;
   bool _transcripterEnabled = false;
-  // bool _startTts=false;
   String _lastWordsBk = "";
   String _lastWords = "";
   String _assistantAnswer = "";
 
-  // bool get isListening => _speechToText.isListening;
-  // bool get isNotListening => _speechToText.isNotListening;
-  // bool get speechEnabled => _speechEnabled;
-  // String get lastWords => _lastWords;
-  // String get assistantAnswer => _assistantAnswer;
-
-
   void iniSpeechToText() {
     _initSpeech(); //speech to text initialization method
     _initTextToSpeech(); //flutter tts initialization method
+    _settingService.readAPIkey();
     print('iniSpeechToText');
     // updateNotifier();
   }
@@ -95,6 +87,8 @@ class VoiceRecognizer {
     print('_onSpeechResult');
     print(_lastWords);
     updateNotifier();
+    ///android: directly send the result to tts or gpt.
+    ///not for web (not work) or ios (ios haven't tested).
     if (_speechToText.isNotListening) {
       if(_transcripterEnabled) {
         _transcripterEnabled=false;
@@ -107,6 +101,7 @@ class VoiceRecognizer {
         lastWordsCheckForChatGPT() : assistantRepeat();
       }
     }
+
     // });
   }
 
@@ -118,9 +113,9 @@ class VoiceRecognizer {
   //   await _flutterTts.pause();
   // }
 
-  void stopSpeechToText() {
-    _speechToText.stop();
-    _flutterTts.stop();
+  void stopSpeechToText() async{
+   await  _speechToText.stop();
+   await _flutterTts.stop();
   }
 
   void updateNotifier() {
@@ -221,7 +216,10 @@ class VoiceRecognizer {
 
         //Note:chatgpt
         // String utf8StringResponse = await _openAIService.chatGPTAPI(utf8StringPrompt);
-         String utf8StringResponse = await _openAIService.chatGPTAPI(_lastWordsBk);
+         String utf8StringResponse = await _openAIService.chatGPTAPI(
+             _lastWordsBk,
+             _settingService.openAIAPIkey
+         );
 
          //Note:The ChatGPT response chinese with utf8 string that must be
          //converted before using it.

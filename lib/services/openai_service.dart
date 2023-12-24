@@ -5,11 +5,10 @@ import 'package:hey_amy/model/api_util.dart';
 
 class OpenAIService {
 
-
   //the list of messages is for gpt continue a conversation remembering what we talk to it before.
   final List<Map<String,String>> _messages = [];
 
-  Future<String> chatGPTAPI(String prompt) async {
+  Future<String> chatGPTAPI(String prompt, String openAIAPIkey) async {
     // return 'CHATGPT';
     //store whatever user said
     _messages.add({
