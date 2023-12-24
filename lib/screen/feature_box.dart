@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:hey_amy/model/pallete.dart';
+
 
 class FeatureBox extends StatelessWidget {
   final Color color;
