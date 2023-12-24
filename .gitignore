@@ -44,7 +44,7 @@ app.*.map.json
 /android/app/release
 
 # The file that includes api key
-/lib/model/api_util.dart
+/lib/model/api_util.dart_bk
 
 mychatgpt.json
 *bk
